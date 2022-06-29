@@ -1,0 +1,49 @@
+version: '3.7'
+services:
+  config_server:
+    image: 172.16.28.217:12000/sh-config-server:v3
+    restart: always
+    ports:
+      - "7000:7000"
+    volumes:
+      - /home/config_repo:/config_repo
+  discovery_server:
+    image: 172.16.28.217:12000/sh-discovery-server:v3
+    restart: always
+    ports:
+      - "8762:8762"
+    depends_on:
+      - config_server
+  gateway_server:
+    image: 172.16.28.217:12000/sh-gateway-server:v3
+    restart: always
+    ports:
+      - "8002:8002"
+    depends_on:
+      - discovery_server
+  authorization_service:
+    image: 172.16.28.217:12000/sh-authorization-service:v3
+    restart: always
+    depends_on:
+      - gateway_server
+  content_service:
+    image: 172.16.28.217:12000/sh-content-service:v3
+    restart: always
+    depends_on:
+      - authorization_service
+  search_service:
+    image: 172.16.28.217:12000/sh-search-serivce:v3
+    restart: always
+    depends_on:
+      - content_service
+  toy_service:
+    image: 172.16.28.217:12000/sunghoon:v3
+    restart: always
+    ports:
+      - "8118:8118"
+    depends_on:
+      - search_service
+networks:
+  default:
+    external:
+      name: toyNet
